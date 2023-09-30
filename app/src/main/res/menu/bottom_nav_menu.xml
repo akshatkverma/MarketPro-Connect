@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:title="Buy &amp; Sell"
+        android:id="@+id/buyAndSellFragment"
+        android:icon="@drawable/ic_buy_and_sell"/>
+    <item
+        android:title="Rent"
+        android:id="@+id/rentFragment"
+        android:icon="@drawable/ic_rent"
+        />
+    <item
+        android:title="Pre-Book"
+        android:id="@+id/preBookFragment"
+        android:icon="@drawable/ic_prebook"/>
+</menu>
