@@ -9,4 +9,8 @@
     <color name="white">#FFFFFFFF</color>
     <color name="green_dark">#4ACA4A</color>
     <color name="green_light">#65E065</color>
+    <color name="whiteTextColor">#fff</color>
+    <color name="primaryTextColor">#00a5ff</color>
+    <color name="loginBkColor">#f0f0f0</color>
+    <color name="whiteCardColor">#fff</color>
 </resources>

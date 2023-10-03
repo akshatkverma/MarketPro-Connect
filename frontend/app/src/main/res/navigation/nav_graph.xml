@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/buyAndSellFragment">
+    app:startDestination="@id/loginActivity">
 
     <fragment
         android:id="@+id/buyAndSellFragment"
@@ -20,4 +20,9 @@
         android:name="sih.lifetime.marketproconnect.fragments.PreBookFragment"
         android:label="fragment_pre_book"
         tools:layout="@layout/fragment_pre_book" />
+    <activity
+        android:id="@+id/loginActivity"
+        android:name="sih.lifetime.marketproconnect.activities.LoginActivity"
+        android:label="activity_login"
+        tools:layout="@layout/activity_login" />
 </navigation>
