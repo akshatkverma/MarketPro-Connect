@@ -1,0 +1,12 @@
+{
+  "name": "marketpro-connect-backend",
+  "version": "1.0.0",
+  "description": "Backend code for Market-Pro Connect Application.",
+  "main": "index.js",
+  "scripts": {
+    "start":"nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "lifetime-error",
+  "license": "ISC"
+}
