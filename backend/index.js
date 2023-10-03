@@ -7,6 +7,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const mongoose = require("mongoose");
+const { sendEmail } = require("./email/sendEmail");
 
 // Create the express app object
 const app = express();
@@ -18,6 +19,14 @@ app.use(cors()); // Allow Cross Origin Resource Sharing
 
 // -------------- API Routes -----------------
 app.get('/', (req, res) => {
+    message = {
+        subject: "Testing",
+        template: "test",
+        context: {
+            username: "Akshat Kumar Verma"
+        }
+    }
+    sendEmail("akshatvermajbp@gmail.com", message);
     return res.json({ message: "Yeahhhhh" }).send();
 })
 
