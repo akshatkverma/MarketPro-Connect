@@ -1,6 +1,6 @@
 const { transporter } = require("./transporter");
 
-function sendEmail(receiver, message) {
+async function sendEmail(receiver, message) {
     if (receiver && message) {
         try {
             const mailData = {
@@ -11,18 +11,12 @@ function sendEmail(receiver, message) {
                 context: message.context,
             };
 
-            transporter.sendMail(mailData, (err, info) => {
-                if (err) {
-                    console.log(err);
-                    return false;
-                }
-                else {
-                    console.log("Mail sent.");
-                }
-            });
+            await transporter.sendMail(mailData);
             return true;
+
         } catch (error) {
             console.log(error);
+            return false;
         }
     } else {
         return false;

@@ -7,7 +7,10 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const mongoose = require("mongoose");
-const { sendEmail } = require("./email/sendEmail");
+
+const User = require("./models/user");
+const registerRoute = require("./controllers/auth/registerController");
+
 
 // Create the express app object
 const app = express();
@@ -18,17 +21,7 @@ app.use(bodyParser.urlencoded({ limit: '10mb', extended: true })); // To pass ur
 app.use(cors()); // Allow Cross Origin Resource Sharing
 
 // -------------- API Routes -----------------
-app.get('/', (req, res) => {
-    message = {
-        subject: "Testing",
-        template: "test",
-        context: {
-            username: "Akshat Kumar Verma"
-        }
-    }
-    sendEmail("akshatvermajbp@gmail.com", message);
-    return res.json({ message: "Yeahhhhh" }).send();
-})
+app.use('/api/auth', registerRoute);
 
 // ------------- Database connection and starting the server --------------
 const PORT = process.env.PORT || 5000;
