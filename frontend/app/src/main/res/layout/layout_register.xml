@@ -118,6 +118,17 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="@dimen/loginViewsMargin" />
 
+        <ProgressBar
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/loginViewsMargin"
+            android:backgroundTint="@color/primaryTextColor"
+            android:id="@+id/registerProgressBar"
+            android:visibility="gone"
+            />
+
+
         <TextView
             android:id="@+id/signInTV"
             style="@style/viewParent"

@@ -2,20 +2,22 @@ const User = require("../../models/user");
 const { sendEmail } = require("../../email/sendEmail");
 
 async function registerController(req, res) {
+	console.log("Reached register")
+	console.log(req.body)
     const { email, send_otp, verify_and_register, name, password, confirm_password, otp } = req.body;
-
     try {
-        if (send_otp == true) {
+        if (send_otp == "true") {
             if (validateEmail(email)) {
                 const { status, message } = await sendOtp(email);
-                if (status) return res.status(200).json({ message });
-                else return res.status(400).json({ message });
+				console.log(status, message)
+                if (status) return res.status(200).json({status : true});
+                else return res.status(400).json({status : true});
             }
             else {
                 return res.status(400).json({ message: "Invalid email" });
             }
         }
-        else if (verify_and_register == true) {
+        else if (verify_and_register == "true") {
             if (otp && validateEmail(email)) {
                 try {
                     await User.validateOTPAndRegister(email, otp, name, password, confirm_password);

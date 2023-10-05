@@ -63,6 +63,12 @@
                     android:visibility="gone"
                     layout="@layout/layout_register"/>
 
+                <include
+                    android:id="@+id/layout_enter_otp"
+                    android:visibility="gone"
+                    layout="@layout/layout_enter_otp"
+                    />
+
             </LinearLayout>
 
         </RelativeLayout>
