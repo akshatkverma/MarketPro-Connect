@@ -9,7 +9,7 @@ dotenv.config();
 const mongoose = require("mongoose");
 
 const User = require("./models/user");
-const registerRoute = require("./controllers/auth/registerController");
+const authRoute = require("./routes/auth");
 
 
 // Create the express app object
@@ -21,7 +21,7 @@ app.use(bodyParser.urlencoded({ limit: '10mb', extended: true })); // To pass ur
 app.use(cors()); // Allow Cross Origin Resource Sharing
 
 // -------------- API Routes -----------------
-app.use('/api/auth', registerRoute);
+app.use('/api/auth', authRoute);
 
 // ------------- Database connection and starting the server --------------
 const PORT = process.env.PORT || 5000;
