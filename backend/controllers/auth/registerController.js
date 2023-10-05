@@ -1,17 +1,19 @@
 const User = require("../../models/user");
 const { sendEmail } = require("../../email/sendEmail");
+const { generateLoginToken } = require("../../utils/generateLoginToken");
+const { validateEmail } = require("../../utils/validateEmail");
 
 async function registerController(req, res) {
-	console.log("Reached register")
-	console.log(req.body)
+    console.log("Reached register")
+    console.log(req.body)
     const { email, send_otp, verify_and_register, name, password, confirm_password, otp } = req.body;
     try {
         if (send_otp == "true") {
             if (validateEmail(email)) {
                 const { status, message } = await sendOtp(email);
-				console.log(status, message)
-                if (status) return res.status(200).json({status : true});
-                else return res.status(400).json({status : true});
+                console.log(status, message)
+                if (status) return res.status(200).json({ status: true });
+                else return res.status(400).json({ status: false });
             }
             else {
                 return res.status(400).json({ message: "Invalid email" });
@@ -20,10 +22,13 @@ async function registerController(req, res) {
         else if (verify_and_register == "true") {
             if (otp && validateEmail(email)) {
                 try {
-                    await User.validateOTPAndRegister(email, otp, name, password, confirm_password);
-                    return res.status(200).json({ message: "Registered Successfully" });
+                    const user = await User.validateOTPAndRegister(email, otp, name, password, confirm_password);
+                    const token = generateLoginToken(user._id);
+                    console.log(token)
+                    return res.status(200).json({ message: "Registered Successfully", token: token });
                 }
                 catch (err) {
+                    console.log(err)
                     return res.status(400).json({ message: err });
                 }
             }
@@ -35,7 +40,7 @@ async function registerController(req, res) {
             return res.status(400).json({ message: "Invalid register request" });
         }
     } catch (error) {
-        res.status(500).json({ error: "Internal Server Error" });
+        return res.status(500).json({ message: "Internal Server Error" });
     }
 }
 
@@ -101,10 +106,5 @@ async function sendOtp(email) {
     }
 }
 
-// Helper function to validate the structure of email
-function validateEmail(email) {
-    if (email && email.includes("@") && email.includes(".", email.indexOf("@"))) return true;
-    else return false;
-}
 
 module.exports = registerController;
