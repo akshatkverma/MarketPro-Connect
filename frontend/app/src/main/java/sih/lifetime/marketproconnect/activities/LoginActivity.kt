@@ -1,5 +1,8 @@
 package sih.lifetime.marketproconnect.activities
 
+import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -9,6 +12,7 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.navigation.findNavController
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
@@ -22,8 +26,14 @@ class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
     private lateinit var volleyRequestQueue: RequestQueue
+    private lateinit var sharedPref : SharedPreferences
     private var password : String? = null
     private var user : User? = null
+
+    override fun onStart() {
+        checkUser()
+        super.onStart()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
@@ -33,6 +43,10 @@ class LoginActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         volleyRequestQueue = Volley.newRequestQueue(this)
+
+        sharedPref = this.getPreferences(Context.MODE_PRIVATE)
+
+        checkUser()
 
         switchToSignUpPage()
         switchToSignInPage()
@@ -76,6 +90,53 @@ class LoginActivity : AppCompatActivity() {
             else
                 Toast.makeText(this,"Please Enter the complete OTP!",Toast.LENGTH_SHORT).show()
         }
+
+        binding.layoutLoginFile.loginButton.setOnClickListener {
+            val email = binding.layoutLoginFile.loginEmail.text.toString()
+            val pass = binding.layoutLoginFile.loginPassword.text.toString()
+            loginUserWithEmailPassword(email, pass)
+            it.visibility = View.GONE
+            binding.layoutLoginFile.loginProgressBar.visibility = View.VISIBLE
+        }
+    }
+
+    private fun loginUserWithEmailPassword(email: String, passwordLogin: String) {
+        val url = getString(R.string.BASE_URL) + "api/auth/login/"
+        val jsonRequestObject = JSONObject()
+        jsonRequestObject.put("email", email)
+        jsonRequestObject.put("password", passwordLogin)
+        val jsonObjectRequest = object : JsonObjectRequest(
+            Method.POST, url,jsonRequestObject,
+            { response->
+                Toast.makeText(applicationContext, "$response", Toast.LENGTH_LONG).show()
+                if(response.has("message") && response["message"] == "Login Successful") {
+                    val token = response["token"].toString()
+                    sharedPref.edit()
+                        .putString("jwt", token)
+                        .apply()
+                    checkUser()
+                }
+                else {
+                    Toast.makeText(applicationContext, "Login Failed!", Toast.LENGTH_SHORT).show()
+                    binding.layoutLoginFile.loginButton.visibility = View.VISIBLE
+                    binding.layoutLoginFile.loginProgressBar.visibility = View.GONE
+                }
+            },
+            {
+                Toast.makeText(applicationContext, "$it ${it.networkResponse.statusCode}", Toast.LENGTH_SHORT).show()
+                binding.layoutLoginFile.loginButton.visibility = View.VISIBLE
+                binding.layoutLoginFile.loginProgressBar.visibility = View.GONE
+            }
+        ) {
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                headers["Content-Type"] = "application/json"
+                return headers
+            }
+        }
+        jsonObjectRequest.setShouldCache(false)
+        jsonObjectRequest.retryPolicy = DefaultRetryPolicy(0, 0, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+        volleyRequestQueue.add(jsonObjectRequest)
     }
 
     private fun verifyOtpAndLogin(otp : String) {
@@ -89,9 +150,20 @@ class LoginActivity : AppCompatActivity() {
         jsonRequestObject.put("confirm_password", password)
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, url,jsonRequestObject,
-            {
-                response->
-                Toast.makeText(applicationContext, "$response", Toast.LENGTH_SHORT).show()
+            { response->
+                Toast.makeText(applicationContext, "$response", Toast.LENGTH_LONG).show()
+                if(response.has("message") && response["message"] == "Registered Successfully") {
+                    val token = response["token"].toString()
+                    sharedPref.edit()
+                        .putString("jwt", token)
+                        .apply()
+                    checkUser()
+                }
+                else {
+                    Toast.makeText(applicationContext, "Login Failed!", Toast.LENGTH_SHORT).show()
+                    binding.layoutEnterOtp.submitOtpButton.visibility = View.VISIBLE
+                    binding.layoutEnterOtp.otpVerifyProgressBar.visibility = View.GONE
+                }
             },
             {
                 Toast.makeText(applicationContext, "$it ${it.networkResponse.statusCode}", Toast.LENGTH_SHORT).show()
@@ -128,7 +200,7 @@ class LoginActivity : AppCompatActivity() {
                 }
             },
             {
-                Toast.makeText(applicationContext, "$it", Toast.LENGTH_SHORT).show()
+//                Toast.makeText(applicationContext, "${it.networkResponse.data}", Toast.LENGTH_SHORT).show()
                 binding.layoutRegisterFile.buttonRegister.visibility = View.VISIBLE
                 binding.layoutRegisterFile.registerProgressBar.visibility = View.GONE
             }
@@ -146,15 +218,37 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         if(binding.layoutRegisterFile.layoutRegisterFileRootElement.visibility == View.VISIBLE) {
+            binding.layoutRegisterFile.layoutRegisterFileRootElement.invalidate()
             binding.layoutRegisterFile.layoutRegisterFileRootElement.visibility = View.GONE
             binding.layoutLoginFile.layoutLoginFileRootElement.visibility = View.VISIBLE
+
+            password = null
+            user = null
+            binding.layoutRegisterFile.registerProgressBar.visibility = View.GONE
+            binding.layoutRegisterFile.buttonRegister.visibility = View.VISIBLE
         }
         else if(binding.layoutEnterOtp.layoutEnterOtpRootElement.visibility == View.VISIBLE) {
+            binding.layoutEnterOtp.layoutEnterOtpRootElement.invalidate()
             binding.layoutEnterOtp.layoutEnterOtpRootElement.visibility = View.GONE
             binding.layoutRegisterFile.layoutRegisterFileRootElement.visibility = View.VISIBLE
+
+            binding.layoutEnterOtp.submitOtpButton.visibility = View.VISIBLE
+            binding.layoutEnterOtp.otpVerifyProgressBar.visibility = View.GONE
+            binding.layoutRegisterFile.layoutRegisterFileRootElement.invalidate()
+            binding.layoutRegisterFile.registerProgressBar.visibility = View.GONE
+            binding.layoutRegisterFile.buttonRegister.visibility = View.VISIBLE
         }
         else {
             return super.onBackPressed()
+        }
+    }
+
+    private fun checkUser() {
+        if(sharedPref.contains("jwt")) {
+            Toast.makeText(this, "JWT Token Found", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+//            val navController = findNavController()
         }
     }
 
@@ -235,6 +329,9 @@ class LoginActivity : AppCompatActivity() {
 
         inputNumber4.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
+                if(s.toString().trim().isEmpty()) {
+                    inputNumber4.requestFocus()
+                }
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -249,6 +346,9 @@ class LoginActivity : AppCompatActivity() {
 
         inputNumber5.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
+                if(s.toString().trim().isEmpty()) {
+                    inputNumber4.requestFocus()
+                }
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
